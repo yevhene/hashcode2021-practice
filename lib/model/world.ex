@@ -4,7 +4,7 @@ defmodule Hashcode2021Practice.Model.World do
   import Nx.Defn
   alias Hashcode2021Practice.Model.World
 
-  @default_defn_compiler EXLA
+  @default_defn_compiler {EXLA, run_options: [keep_on_device: true]}
 
   def tensor(%World{pizzas: pizzas}) do
     ingredients =
@@ -24,15 +24,10 @@ defmodule Hashcode2021Practice.Model.World do
     |> Nx.tensor()
   end
 
-  defn(distance_matrix(a), do: distance_matrix(a, a))
-
-  defn distance_matrix(a, b) do
-    p1 = a |> Nx.power(2) |> Nx.sum(axes: [1], keep_axes: true)
-
-    p2 =
-      b |> Nx.power(2) |> Nx.sum(axes: [1], keep_axes: true) |> Nx.transpose()
-
-    p3 = a |> Nx.dot(Nx.transpose(b)) |> Nx.multiply(-2)
-    Nx.sqrt(p1 + p2 + p3)
+  defn self_distance_matrix(a) do
+    p1 = a |> Nx.sum(axes: [1], keep_axes: true)
+    p2 = p1 |> Nx.transpose()
+    p3 = a |> Nx.dot(Nx.transpose(a)) |> Nx.multiply(-2)
+    p3 + p2 + p1
   end
 end
