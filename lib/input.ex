@@ -23,7 +23,7 @@ defmodule Hashcode2021Practice.Input do
   end
 
   defp process_pizza(string) do
-    [count | ingredients] = string |> String.split(" ", trim: true)
+    [count | ingredients] = string |> String.split([" ", "\n"], trim: true)
     count = String.to_integer(count)
 
     ^count = length(ingredients)
