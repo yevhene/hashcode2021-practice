@@ -1,14 +1,16 @@
 defmodule Hashcode2021Practice.Model.World do
   defstruct [:pizzas, :teams2, :teams3, :teams4]
 
-  alias Hashcode2021Practice.Model.Pizza
+  import Nx.Defn
   alias Hashcode2021Practice.Model.World
 
-  def table(%World{pizzas: pizzas}) do
+  @default_defn_compiler EXLA
+
+  def tensor(%World{pizzas: pizzas}) do
     ingredients =
       pizzas
       |> Enum.reduce(MapSet.new(), fn pizza, set ->
-        MapSet.new(pizza.ingredients) |> MapSet.union(set)
+        MapSet.new(pizza) |> MapSet.union(set)
       end)
       |> MapSet.to_list()
 
@@ -16,36 +18,21 @@ defmodule Hashcode2021Practice.Model.World do
     |> Enum.map(fn pizza ->
       ingredients
       |> Enum.map(fn ingredient ->
-        if Enum.member?(pizza.ingredients, ingredient), do: 1, else: 0
+        if Enum.member?(pizza, ingredient), do: 1, else: 0
       end)
     end)
+    |> Nx.tensor()
   end
 
-  def build(data) do
-    strings = data |> String.split("\n", trim: true)
-    [_count, teams2, teams3, teams4] = strings |> Enum.at(0) |> process_header()
-    pizzas = strings |> Enum.drop(1) |> Enum.map(&process_pizza/1)
+  defn(distance_matrix(a), do: distance_matrix(a, a))
 
-    %World{
-      teams2: teams2,
-      teams3: teams3,
-      teams4: teams4,
-      pizzas: pizzas
-    }
-  end
+  defn distance_matrix(a, b) do
+    p1 = a |> Nx.power(2) |> Nx.sum(axes: [1], keep_axes: true)
 
-  defp process_header(string) do
-    string
-    |> String.split(" ", trim: true)
-    |> Enum.map(&parse_int/1)
-  end
+    p2 =
+      b |> Nx.power(2) |> Nx.sum(axes: [1], keep_axes: true) |> Nx.transpose()
 
-  defp process_pizza(string) do
-    %Pizza{ingredients: string |> String.split(" ", trim: true) |> Enum.drop(1)}
-  end
-
-  defp parse_int(string) do
-    {value, _} = Integer.parse(string)
-    value
+    p3 = a |> Nx.dot(Nx.transpose(b)) |> Nx.multiply(-2)
+    Nx.sqrt(p1 + p2 + p3)
   end
 end
