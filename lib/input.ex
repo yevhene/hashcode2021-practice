@@ -1,6 +1,4 @@
 defmodule Hashcode2021Practice.Input do
-  defstruct [:pizzas, :teams2, :teams3, :teams4]
-
   alias Hashcode2021Practice.Model.World
 
   def read_world do

@@ -1,4 +1,4 @@
-defmodule Hashcode2021Practice.Time do
+defmodule Hashcode2021.Time do
   def measure(function, tag) do
     IO.puts("[#{tag}] started")
     {time, result} = :timer.tc(function)
